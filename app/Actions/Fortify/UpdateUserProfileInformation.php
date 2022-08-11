@@ -2,13 +2,41 @@
 
 namespace App\Actions\Fortify;
 
+use App\Http\Requests\UserUpdateRequest;
+use App\Services\UserFill\UserFillService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 
 class UpdateUserProfileInformation implements UpdatesUserProfileInformation
 {
+    /**
+     * instance UserFillService
+     *
+     * @var [type]
+     */
+    public $userFillService;
+
+    /**
+     * instance UserUpdateRequest
+     *
+     * @var [type]
+     */
+    public $userUpdateRequest;
+
+    /**
+     * init class
+     *
+     * @param UserUpdateRequest $userUpdateRequest
+     */
+    public function __construct(
+        UserUpdateRequest $userUpdateRequest,
+        UserFillService $userFillService,
+    ) {
+        $this->userUpdateRequest = $userUpdateRequest;
+        $this->userFillService = $userFillService;
+    }
+
     /**
      * Validate and update the given user's profile information.
      *
@@ -18,26 +46,20 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
      */
     public function update($user, array $input)
     {
-        Validator::make($input, [
-            'name' => ['required', 'string', 'max:255'],
+        Validator::make(
+            $input,
+            $this->userUpdateRequest->rules($user->id)
+        )->validate();
 
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('users')->ignore($user->id),
-            ],
-        ])->validateWithBag('updateProfileInformation');
-
-        if ($input['email'] !== $user->email &&
-            $user instanceof MustVerifyEmail) {
+        if (
+            $input['email'] !== $user->email &&
+            $user instanceof MustVerifyEmail
+        ) {
             $this->updateVerifiedUser($user, $input);
         } else {
-            $user->forceFill([
-                'name' => $input['name'],
-                'email' => $input['email'],
-            ])->save();
+            $user->forceFill(
+                $this->userFillService->updateFill($input)
+            )->save();
         }
     }
 
@@ -50,11 +72,9 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
      */
     protected function updateVerifiedUser($user, array $input)
     {
-        $user->forceFill([
-            'name' => $input['name'],
-            'email' => $input['email'],
-            'email_verified_at' => null,
-        ])->save();
+        $user->forceFill(
+            $this->userFillService->updateVerifiedFill($input)
+        )->save();
 
         $user->sendEmailVerificationNotification();
     }
