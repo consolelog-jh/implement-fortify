@@ -54,6 +54,12 @@ class UserFillService implements UserFillContract
         ];
     }
 
+    /**
+     * return object fill for update user with verify email
+     *
+     * @param array $input
+     * @return void
+     */
     public function updateVerifiedFill(array $input)
     {
         return [

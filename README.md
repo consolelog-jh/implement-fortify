@@ -24,6 +24,7 @@ $ php artisan make:service UserRegister
 $ php artisan make:service UserDelete
 $ php artisan make:service RoleCollect
 $ php artisan make:service UserFill
+$ php artisan make:service UserUpdateRole
 $ php artisan make:request UserRegisterRequest
 $ php artisan make:request UserUpdateRequest
 ```  
@@ -40,7 +41,7 @@ $ php artisan make:request UserUpdateRequest
 - copy / paste code in `app/Actions/Fortify/CreateNewUser.php`  
 - copy / paste code in `app/Actions/Fortify/UpdateUserProfileInformation.php`  
 
-- update varaibe `HOME` in `app/Providers/RouteServiceProvider.php`  
+- update variable `HOME` in `app/Providers/RouteServiceProvider.php`  
 
 - copy / paste code in `config/fortify`   
 - add this in `config/app.php`  

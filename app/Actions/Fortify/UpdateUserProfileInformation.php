@@ -4,6 +4,7 @@ namespace App\Actions\Fortify;
 
 use App\Http\Requests\UserUpdateRequest;
 use App\Services\UserFill\UserFillService;
+use App\Services\UserUpdateRole\UserUpdateRoleService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
@@ -25,6 +26,13 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
     public $userUpdateRequest;
 
     /**
+     * instance UserUpdateService
+     *
+     * @var [type]
+     */
+    public $userUpdateRoleService;
+
+    /**
      * init class
      *
      * @param UserUpdateRequest $userUpdateRequest
@@ -32,9 +40,11 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
     public function __construct(
         UserUpdateRequest $userUpdateRequest,
         UserFillService $userFillService,
+        UserUpdateRoleService $userUpdateRoleService,
     ) {
         $this->userUpdateRequest = $userUpdateRequest;
         $this->userFillService = $userFillService;
+        $this->userUpdateRoleService = $userUpdateRoleService;
     }
 
     /**
@@ -60,6 +70,8 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             $user->forceFill(
                 $this->userFillService->updateFill($input)
             )->save();
+
+            $this->userUpdateRoleService->updateRole($user, $input);
         }
     }
 
